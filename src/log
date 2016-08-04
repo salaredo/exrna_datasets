@@ -1,0 +1,45 @@
+# download list of files from http://exrna-atlas.org/exat/datasets, then gridview
+# example file in list
+
+# download files
+foreach file (`cat ../data/list`)
+   wget --directory-prefix=../tmp $file
+end
+
+# unpack data files
+foreach file (../tmp/*.tgz)
+   echo $file
+   set outfile = `echo $file | sed 's/_fastq.*//;s/sample_Sample_//'`.txt
+   gzip -cd $file | tar xf - --wildcards --to-stdout "*miRNAmature_sense.txt" > $outfile
+end
+
+### switch to R
+
+library(data.table)
+
+# read in all files
+files <- list.files(path="../tmp", pattern = "*.txt", full.names = TRUE)
+data <- list()
+for ( file in files ){
+   print(file)
+   sample <- gsub(".txt","",gsub(".*/","",file))
+   data[[sample]] <- fread(file,header=TRUE,stringsAsFactors=FALSE)
+
+   # just get multimapAdjustedReadCount column
+   data[[sample]] <- data[[sample]][,.(ReferenceID,multimapAdjustedReadCount)]
+   colnames(data[[sample]])[2] <- paste(sample,colnames(data[[sample]])[2],sep="_")
+   
+   setkey(data[[sample]],ReferenceID)
+}
+
+# merge columns
+output <- data.table(ReferenceID=data[[1]][,ReferenceID])
+setkey(output, ReferenceID)
+for( sample in names(data) ) {
+   print(sample)
+   output <- merge(output, data[[sample]], all=TRUE)
+   print(dim(output))
+}
+
+# write output file
+write.table(output, "../results/output.txt", row.names=FALSE, sep="\t")
