@@ -41,5 +41,10 @@ for( sample in names(data) ) {
    print(dim(output))
 }
 
+# filter out rows with > 90% NA
+naCount <- apply(output,1,function(x){sum(is.na(x))})
+output <- output[naCount < dim(output)[2]*.9,]
+
+
 # write output file
 write.table(output, "../results/output.txt", row.names=FALSE, sep="\t")
