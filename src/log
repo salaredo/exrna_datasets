@@ -7,22 +7,25 @@ foreach file (`cat ../data/list`)
 end
 
 # unpack data files
+set type = "miRNAprecursor_sense"
 foreach file (../tmp/*.tgz)
    echo $file
-   set outfile = `echo $file | sed 's/_fastq.*//;s/sample_Sample_//'`.txt
-   gzip -cd $file | tar xf - --wildcards --to-stdout "*miRNAmature_sense.txt" > $outfile
+   set outfile = `echo $file | sed 's/_fastq.*//;s/sample_Sample_//'`_${type}.txt
+   gzip -cd $file | tar xf - --wildcards --to-stdout "*${type}.txt" > $outfile
 end
 
 ### switch to R
 
 library(data.table)
 
+type <- "miRNAprecursor_sense"
+
 # read in all files
-files <- list.files(path="../tmp", pattern = "*.txt", full.names = TRUE)
+files <- list.files(path="../tmp", pattern = type, full.names = TRUE)
 data <- list()
 for ( file in files ){
    print(file)
-   sample <- gsub(".txt","",gsub(".*/","",file))
+   sample <- gsub(paste("_",type,".txt",sep=""),"",gsub(".*/","",file))
    data[[sample]] <- fread(file,header=TRUE,stringsAsFactors=FALSE)
 
    # just get multimapAdjustedReadCount column
@@ -45,6 +48,10 @@ for( sample in names(data) ) {
 naCount <- apply(output,1,function(x){sum(is.na(x))})
 output <- output[naCount < dim(output)[2]*.9,]
 
+# extract miRNA symbols from referenceID column
+if( grepl( "miRNA", type ) ){
+   output$ReferenceID <- sapply(output$ReferenceID,function(x){return(strsplit(x,":")[[1]][5])})
+}
 
 # write output file
-write.table(output, "../results/output.txt", row.names=FALSE, sep="\t")
+write.table(output, paste("../results/",type,"_output.txt",sep=""), row.names=FALSE, sep="\t")
