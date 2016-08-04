@@ -50,8 +50,17 @@ output <- output[naCount < dim(output)[2]*.9,]
 
 # extract miRNA symbols from referenceID column
 if( grepl( "miRNA", type ) ){
-   output$ReferenceID <- sapply(output$ReferenceID,function(x){return(strsplit(x,":")[[1]][5])})
+   # first convert to mirbase ID
+   z <- sapply(output$ReferenceID,function(x){return(strsplit(x,":")[[1]][2])})
+
+   # convert mirbase ID to Entrez gene ID
+   require(mygene)
+   y <- queryMany(z, scopes="miRBase", fields="entrezgene", species="human")
+   output$ReferenceID <- y$entrezgene
 }
+
+# convert all NA to 0
+output[is.na(output)] <- 0
 
 # write output file
 write.table(output, paste("../results/",type,"_output.txt",sep=""), row.names=FALSE, sep="\t")
