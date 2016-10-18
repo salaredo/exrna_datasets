@@ -13,6 +13,30 @@ for(file in namefiles$list.files.path.....Users.Sarah.Code.exrna_datasets.tmp...
    untar(file, files="sample_Sample_*_fastq/readCounts_miRNAprecursor_sense.txt", exdir="/Users/Sarah/Code/exrna_datasets/txt")
 }
 
+#############################################################################################
+
+#Renaming txt files
+setwd("/Users/Sarah/Code/exrna_datasets/txt")
+
+#Isolate gene names from folder file name
+dir<-paste(getwd())
+dir2<-paste(dir, "/", sep="")
+nameGene<-paste(dir, "/", dir(dir), sep="")
+nameGene1<-gsub("sample_Sample_", "", nameGene)
+nameGene2<-gsub("_fastq", "", nameGene1)
+nameGene3<-gsub(dir2, "", nameGene2) #nameGene3 will now print each gene name
+
+#Create new path for renaming txt files
+renameFile<-paste(nameGene, "/", nameGene3, sep="")
+renameFile1<-paste(renameFile, "_", "readCounts_miRNAprecursor_sense.txt", sep="")
+renameFile2<-gsub("readCounts_", "", renameFile1)
+
+#Create directories for rename.file
+dirFile<-paste(nameGene, "/", "readCounts_miRNAprecursor_sense.txt", sep="")
+
+#Rename files
+file.rename(dirFile, renameFile2)
+
 ### switch to R
 
 library(data.table)
