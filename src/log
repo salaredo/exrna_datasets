@@ -1,18 +1,17 @@
-# download list of files from http://exrna-atlas.org/exat/datasets, then gridview
-# example file in list
+#import /data/list copy.txt in R
+#converted original data/list file from a Unix Executable File to a plain text file named "list copy.txt"
 
-# download files
-foreach file (`cat ../data/list`)
-   wget --directory-prefix=../tmp $file
-end
+list_copy <- read.table("~/Code/exrna_datasets/data/list copy.txt", quote="\"", as.is=TRUE, colClasses="character", comment.char="", stringsAsFactors=FALSE)
+
+#downloading URL using curl package in R
+setwd("/Users/Sarah/Code/exrna_datasets/tmp")
+for (url in list_copy$V1) {download.file(url, destfile=basename(url), method="curl")}
 
 # unpack data files
-set type = "miRNAprecursor_sense"
-foreach file (../tmp/*.tgz)
-   echo $file
-   set outfile = `echo $file | sed 's/_fastq.*//;s/sample_Sample_//'`_${type}.txt
-   gzip -cd $file | tar xf - --wildcards --to-stdout "*${type}.txt" > $outfile
-end
+namefiles<-data.frame(list.files(path="/Users/Sarah/Code/exrna_datasets/tmp/"))
+for(file in namefiles$list.files.path.....Users.Sarah.Code.exrna_datasets.tmp...) {
+   untar(file, files="sample_Sample_*_fastq/readCounts_miRNAprecursor_sense.txt", exdir="/Users/Sarah/Code/exrna_datasets/txt")
+}
 
 ### switch to R
 
