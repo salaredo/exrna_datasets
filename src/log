@@ -37,6 +37,19 @@ dirFile<-paste(nameGene, "/", "readCounts_miRNAprecursor_sense.txt", sep="")
 #Rename files
 file.rename(dirFile, renameFile2)
 
+#move files from parent directory to a new folder containing only the txt files
+
+txtfile<-gsub("/Users/Sarah/Code/exrna_datasets/txt/sample_Sample_.*_fastq/", "", renameFile2) #isolates invidual txt file names
+
+setwd("/Users/Sarah/Code/exrna_datasets/results")
+dir3<-paste(getwd())
+renameFile3<-paste(dir3, "/", txtfile, sep="") #creates directory to move file to
+
+file.rename(renameFile2, renameFile3) #move files between directories
+
+#delete empty folders
+unlink(nameGene, recursive=TRUE)
+
 ### switch to R
 
 library(data.table)
